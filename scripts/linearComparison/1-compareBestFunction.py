@@ -35,6 +35,8 @@ pltz.append(plt.subplot2grid((3,2), (2, 1)))
 
 takes = [2,1,3,4,5]
 
+print 'NL Error', 'OLS Error', 'LASSO Error'
+
 for i in range(len(takes)):
 
 	iFile = csv.reader(open('../../data/Running_6_' + str(takes[i]) + '_Z.csv', 'r'))
@@ -58,7 +60,7 @@ for i in range(len(takes)):
 		err_OLS.append(abs(r[8] - expected_OLS[-1]))
 		err_LASSO.append(abs(r[8] - expected_LASSO[-1]))
 
-	print np.mean(err), np.mean(err_OLS), np.mean(err_LASSO)
+	print takes[i], np.mean(err), np.mean(err_OLS), np.mean(err_LASSO)
 	if i == 0:
 		pltz[i].set_title("Subject 6 Running Take " + str(takes[i]) + " --- Model Fit To This Data")
 	else:

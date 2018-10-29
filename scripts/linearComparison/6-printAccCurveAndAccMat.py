@@ -1,6 +1,6 @@
 '''
-Generates the accuracy curve for the data based on the number of data poitns in GROUP SIZE
-Also generates the accuracy matrices too. 
+Prints the accuracy curves generated in script 5. 
+
 
 *
 ****************
@@ -9,13 +9,7 @@ NOTE TO JAMES:
 ****************
 *
 
-**** IMPORTANT NOTE IF USING THIS SCRIPT AGAIN IN THE FUTURE! ****
-(Might kinda' ruin the randomness though... so, idk)
-I have a strong feeling that I could make this WAY FASTER IF:
-- Only calculate on the max value of GROUP_SIZE (120 in this case)
-- Store all the values, so I have a 120 rows x 100 cols
-- Calculate each GROUP_SIZE's error by doing the mean of the first 5, 10, 15, 20, 25, etc. rows
-- I'm pretty sure that will work, and it will make it run WAY FASTER!
+
 
 
 '''

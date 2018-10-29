@@ -1,5 +1,7 @@
 '''
-Counts the number of non-zero features were present
+Blot the beta weights found for each model. 
+
+Idk how helpful this is. Maybe LASSO's will be helpful?
 
 Use this to compare to the nonlinear model feature heatmap thing. 
 
