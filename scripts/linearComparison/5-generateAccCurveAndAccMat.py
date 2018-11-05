@@ -137,6 +137,8 @@ def generateAccCurve(functions, regType = 'OLS'):
 
 												# Add the error to the list keeping track of the data points error on all models													
 												absErr_forDatum.append(abs(err))
+								
+
 
 								# After applying the single row of data to all models
 								# Add the error for each model to the list of errors
@@ -189,6 +191,8 @@ def generateAccCurve(functions, regType = 'OLS'):
 
 			accMatSmall = np.array(accMatSmall)
 			
+			# Save the accmat
+			np.savetxt('./accuracyMatrices/5-AccMatSmall_' + str(GROUP_SIZE) + '_' + time + '_' + regType + '.csv', accMatSmall, delimiter=',')
 			
 			# Go through the diagonal (kinda, it's not really a diag, more like a staircase)					
 			# And record how often it was right
