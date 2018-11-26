@@ -33,8 +33,8 @@ DATA_PATH = '../../data/'
 tasks = ['Up', 'Down', 'Walking',  'Jogging', 'Running',]
 subjects = ['1','2','3','4','5','6']
 takes = ['1','2','3','4','5']
-times = ['', '10s', '20s']
-#times = [sys.argv[1]]
+#times = ['', '10s', '20s']
+times = [sys.argv[1]]
 
 
 NUM_FUNCTIONS = len(subjects)*len(tasks)*len(takes)
@@ -119,7 +119,7 @@ def generateAccCurveVote(functions):
 												# NEVER APPLY THE DATA TO THE MODEL IT WAS FIT TOOO!!!
 												# If we have data from the model we're looking at, skip it (add a list of max value because that means it will never be the 'BEST')
 												if task == tsk and subject == sub and tke == take:
-													absErr_forDatum.append(sys.maxint)
+													absErr_forDatum.append([sys.maxint]*voters)
 												# Otherwise, just apply the data to the model and record the error value
 												else:
 													# Give each voter a shot
@@ -129,8 +129,14 @@ def generateAccCurveVote(functions):
 															# Get the error by finding the difference between what we expect (l[-1] --- the last element in the row)
 															# and what we got (applying all other data points to the model).
 															err = d[-1] - functions[time][tsk][sub][tke][j](*d)
-														except (ValueError, OverflowError, ZeroDivisionError):
-															print 'Busted'
+																
+														######################################
+														# HERE I LINES THE PROBLEM
+														# What do I do here?
+														######################################
+														except (ValueError, OverflowError, ZeroDivisionError), e:
+														#except OverflowError, e:
+															#print 'Busted', str(e)
 															# What's better... nan or maxint?
 															# nan might be cheating because: np.nanmean([nan, nan, nan, 1]) = 1
 															# max int might be unfair as it could make things slightly off seem way worse?
@@ -142,23 +148,46 @@ def generateAccCurveVote(functions):
 														voterScores.append(abs(err))
 
 													# The voters will just average out their error on the data point
-													# Add the average error to the list keeping track of the data points error on all models												
-													absErr_forDatum.append(np.nanmean(voterScores))
+													# Add the average error to the list keeping track of the data points error on all models				
+													# DERRICK LEE HAD A BRILLIANT SIMPLE IDEA TO JUST USE MEDIAN INSTEAD
+													#		Honestly... why did I not think of that?							
+													# THIS SEEMS WRONG	
+													#absErr_forDatum.append(np.nanmedian(voterScores))
+													# I think I want it this way
+													# add all the voters data to a list, and then average them in the end
+													# then eventually we'll take the median?
+													absErr_forDatum.append(voterScores)
 
 									# After applying the single row of data to all models
 									# Add the error for each model to the list of errors
 									# After doing this for all data points (GROUP_SIZE), we will get the column mean. 
 									absErr_forAllData.append(absErr_forDatum)
-
+								
 								# This line should not be necessary....
 								#if np.argmin(np.mean(abEs,axis=0)) > 0.000:	
-							
+
+								# WILL PROBABLY HAVE TO TALK ABOUT THIS IN REPORT?							
 								# Find the index of the model with the smallest error
 								# This will be the *winner* model
 								# And mark it as the winner in the row's accuracy
 								# Note that this is not an accuracy really, but just a record that it was selected
 								# Accuracy is determined if the min model belonged to the same subject/task combo (take doesn't matter)		
-								accRow[np.argmin(np.mean(absErr_forAllData,axis=0))] += (1.)
+								#accRow[np.argmin(np.mean(absErr_forAllData,axis=0))] += (1.)
+								# DERRICK LEE HAD A BRILLIANT SIMPLE IDEA TO JUST USE MEDIAN INSTEAD
+								#		Honestly... why did I not think of that?
+								# So, we take the average, median value from the voters to see who won it. 
+								# And remember we're doing this 100 times
+								#accRow[np.nanargmin(np.nanmean(absErr_forAllData,axis=0))] += (1.)
+
+								# Calculate the MAE for each voter
+								voter_MAE = np.nanmean(absErr_forAllData,axis=0)
+			
+								# Now figure out which group of *voters* had the smallest (mean, median (or should it be most votes?)
+								# I THINK median makes the most sense here?
+								after_voting_error = np.nanmedian(voter_MAE,axis=1)
+
+								# Find which pool of voters was *best* and give it the win
+								accRow[np.nanargmin(after_voting_error)] += (1.)
 
 							# Divide by 100 so we get a percent
 							# Add the row's (data set's) values to the matrix
@@ -170,7 +199,7 @@ def generateAccCurveVote(functions):
 				accMat = np.array(accMat)
 
 				# Save the accuracy matrix here
-				np.savetxt('./accuracyMatrices/5-AccMat-TOP_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMat, delimiter=',') 
+				np.savetxt('./accuracyMatrices/1-AccMat-TOP_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMat, delimiter=',') 
 
 				# This part will now count the actual accuracies
 			
@@ -194,7 +223,9 @@ def generateAccCurveVote(functions):
 
 				accMatSmall = np.array(accMatSmall)
 			
-			
+				# Save the small accuracy matrix here
+				np.savetxt('./accuracyMatrices/1-AccMat-Small-TOP_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMatSmall, delimiter=',') 
+
 				# Go through the diagonal (kinda, it's not really a diag, more like a staircase)					
 				# And record how often it was right
 				diagValues = []
@@ -210,7 +241,7 @@ def generateAccCurveVote(functions):
 				accCurveState.append([np.mean(diagValues), np.std(diagValues), np.median(diagValues), np.min(diagValues), np.max(diagValues), NUM_FUNCTIONS])
 
 			# Save the output for each time 
-			np.savetxt('5-accCurveNoSameTake-TOP-' + str(voters) + '_' + time + '.csv', accCurveState, delimiter=',')
+			np.savetxt('1-accCurveNoSameTake-TOP-' + str(voters) + '_' + time + '.csv', accCurveState, delimiter=',')
 			
 
 generateAccCurveVote(functions)
