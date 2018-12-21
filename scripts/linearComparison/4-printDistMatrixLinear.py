@@ -7,12 +7,13 @@ You might have to change V_MIN and V_MAX
 '''
 
 import csv
+import matplotlib as mpl
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import sklearn.linear_model
 
-
+mpl.style.use('classic')
 DATA_PATH = './'
 
 # Change these to alter the scales

@@ -206,7 +206,7 @@ def generateAccCurveVote(functions):
 				accMat = np.array(accMat)
 
 				# Save the accuracy matrix here
-				np.savetxt('./accuracyMatrices/2-AccMat-MIX_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMatSmall, delimiter=',') 
+				np.savetxt('./accuracyMatrices/3-AccMat-MIX_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMat, delimiter=',') 
 
 				# This part will now count the actual accuracies
 			
@@ -231,7 +231,7 @@ def generateAccCurveVote(functions):
 				accMatSmall = np.array(accMatSmall)
 			
 				# Save the small accuracy matrix here
-				np.savetxt('./accuracyMatrices/2-AccMat-Small-MIX_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMat, delimiter=',') 
+				np.savetxt('./accuracyMatrices/3-AccMat-Small-MIX_' + str(voters) + '_' + str(GROUP_SIZE) + '_' + time + '.csv', accMatSmall, delimiter=',') 
 
 			
 				# Go through the diagonal (kinda, it's not really a diag, more like a staircase)					
@@ -249,7 +249,7 @@ def generateAccCurveVote(functions):
 				accCurveState.append([np.mean(diagValues), np.std(diagValues), np.median(diagValues), np.min(diagValues), np.max(diagValues), NUM_FUNCTIONS])
 
 			# Save the output for each time 
-			np.savetxt('2-accCurveNoSameTake-MIX-' + str(voters) + '_' + time + '.csv', accCurveState, delimiter=',')
+			np.savetxt('3-accCurveNoSameTake-MIX-' + str(voters) + '_' + time + '.csv', accCurveState, delimiter=',')
 			
 
 generateAccCurveVote(functions)

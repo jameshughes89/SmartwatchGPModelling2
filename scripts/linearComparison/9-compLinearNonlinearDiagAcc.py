@@ -37,7 +37,7 @@ def getDiagonals(regType='OLS'):
 		linDistMat = np.array(list(csv.reader(open('./3-matrix_' + time + '_' + regType + '.csv','r')))).astype(float)
 
 		linDiagValues = []
-		for i in range(30):
+		for i in range(150):
 			linDiagValues.append(linDistMat[i,i])
 
 
@@ -53,7 +53,7 @@ def getDiagonals(regType='OLS'):
 		nonlinDistMat = np.array(list(csv.reader(open('./3-NLabEmat_' + time + '.csv','r')))).astype(float)
 		
 		nonlinDiagValues = []
-		for i in range(30):
+		for i in range(150):
 			nonlinDiagValues.append(nonlinDistMat[i,i])
 
 

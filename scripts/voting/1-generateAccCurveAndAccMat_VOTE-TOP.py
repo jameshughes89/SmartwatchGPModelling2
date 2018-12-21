@@ -38,7 +38,8 @@ times = [sys.argv[1]]
 
 
 NUM_FUNCTIONS = len(subjects)*len(tasks)*len(takes)
-NUM_VOTERS = 10
+NUM_VOTERS_START = 5
+NUM_VOTERS_STOP = 10
 MAX_GROUP_SIZE = 120
 
 functions = nonlinear_models_vote.getFuncs()
@@ -63,7 +64,7 @@ def generateAccCurveVote(functions):
 
 		# Do a run to test the accuracies when 'voters' vote
 		# A vote will simply just be the average MAE over the number of voters
-		for voters in range(1, NUM_VOTERS + 1):
+		for voters in range(NUM_VOTERS_START, NUM_VOTERS_STOP + 1):
 
 			# A list to hold the details for the accuracy curve
 			# This will be saved and printed out later. 
