@@ -42,7 +42,7 @@ def printAccCurve(regType = 'OLS'):
 			CIa.append(l[0] + (1.96 * (l[1]/math.sqrt(l[5]))))
 
 
-		plt.axhline(1.2)
+		#plt.axhline(1.2)
 		
 		# Set up dashed lines
 		for y in np.arange(0.1, 1.11, 0.1):

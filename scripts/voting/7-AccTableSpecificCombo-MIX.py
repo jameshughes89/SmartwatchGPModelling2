@@ -23,7 +23,7 @@ times = ['', '10s', '20s']
 
 # CHANGE THESE!
 GROUP_SIZE = 50
-VOTERS = 1
+VOTERS = 5
 
 def loadData(fileName):
 	# Load the data into a numpy array of floats
@@ -78,7 +78,7 @@ for time in times:
 	# Make the table (latex format)
 	for i, task in enumerate(tasks):
 		# String we're building for output
-		s = '' + task + ' &\t '
+		s = '\hline ' + task + ' &\t '
 		for j, sub in enumerate(subjects):
 			#print '(' + str(i * (len(tasks) * len(subjects)) + len(takes) * j) +  ':' + str(i * (len(tasks) * len(subjects) + len(takes) * j + len(takes))) + ', ' + str( i * len(subjects) + j) + ')\t', smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]
 			# Switch this for mean/median and CI/IQR
@@ -105,7 +105,7 @@ for time in times:
 		s += '\\\\'
 		print s
 
-	s = 'Identify Subject &\t '
+	s = '\hline Identify Subject &\t '
 	for i, sub in enumerate(subjects):
 		curSub = []
 		for j in range(0,5):

@@ -24,7 +24,7 @@ times = ['', '10s', '20s']
 
 
 # 50, because that's what was in the previous paper, but can be changed
-GROUP_SIZE = 100	
+GROUP_SIZE = 50	
 
 # Probably leave them as 0 -- 1
 V_MIN = 0.0		

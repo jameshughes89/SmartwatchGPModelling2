@@ -92,23 +92,23 @@ for time in times:
 	diff2Time = []
 	diff3Time = []
 	for gs in range(5, MAX_GROUP_SIZE + 1, 5):
-		wilcox = scipy.stats.wilcoxon(topData[gs][1], randData[gs][2])
+		wilcox = scipy.stats.wilcoxon(topData[gs][2], mixData[gs][5])
 		sameTime.append(wilcox[1])
 
 		# if we're not at the edge case
 		if gs > 5:
-			wilcox = scipy.stats.wilcoxon(topData[gs][1], randData[gs-5][2])
+			wilcox = scipy.stats.wilcoxon(topData[gs][2], mixData[gs-5][2])
 			diff1Time.append(wilcox[1])
 		
 
 		# if we're not at the edge case again
 		if gs > 10:
-			wilcox = scipy.stats.wilcoxon(topData[gs][1], randData[gs-10][2])
+			wilcox = scipy.stats.wilcoxon(topData[gs][2], mixData[gs-10][2])
 			diff2Time.append(wilcox[1])
 
 		# if we're not at the edge case again
 		if gs > 15:
-			wilcox = scipy.stats.wilcoxon(topData[gs][1], randData[gs-15][2])
+			wilcox = scipy.stats.wilcoxon(topData[gs][2], mixData[gs-15][2])
 			diff3Time.append(wilcox[1])
 
 
@@ -126,7 +126,7 @@ for time in times:
 	plt.xticks(range(0,len(sameTime)), range(5, MAX_GROUP_SIZE + 1, 5)) 
 	plt.xlabel('Number of Time Points Given to Top Model Classifier')
 	plt.xlim((0,len(sameTime)-1))
-	plt.ylabel('p-Value Between Top Model With 1 Vote Classifier\nand Random Model With 2 Votes')
+	plt.ylabel('p-Value Between Top Model With 5 Vote Classifier\nand Random Model With 6 Votes')
 
 	plt.title('Comparing Top Model Classifier\nand Random Model Classifier')
 	plt.legend(fontsize=8)

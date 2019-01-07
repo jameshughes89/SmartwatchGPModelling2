@@ -20,8 +20,8 @@ DATA_PATH = './accuracyMatrices/'
 tasks = ['Up', 'Down', 'Walking',  'Jogging', 'Running',]
 subjects = ['1','2','3','4','5','6']
 takes = ['1','2','3','4','5']
-#times = ['', '10s', '20s']
-times = ['']
+times = ['', '10s', '20s']
+#times = ['']
 #times = [sys.argv[1]]
 
 NUM_VOTERS_START = 1
