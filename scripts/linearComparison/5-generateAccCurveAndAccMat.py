@@ -71,6 +71,7 @@ def generateAccCurve(functions, regType = 'OLS'):
 		# How many data points are used for classification?
 		# start at 5, count by 5s to 121 (121 is overkill)
 		for GROUP_SIZE in range(5, 121, 5):
+		#for GROUP_SIZE in range(50, 55, 5):
 	
 			# This is where we will store all the data to be output
 			accMat = []	
@@ -212,5 +213,5 @@ def generateAccCurve(functions, regType = 'OLS'):
 		np.savetxt('5-accCurveNoSameTake-' + time + '_' + regType + '.csv', accCurveState, delimiter=',')
 			
 
-#generateAccCurve(functions_OLS, regType='OLS')
-generateAccCurve(functions_LASSO, regType='LASSO')
+generateAccCurve(functions_OLS, regType='OLS')
+#generateAccCurve(functions_LASSO, regType='LASSO')

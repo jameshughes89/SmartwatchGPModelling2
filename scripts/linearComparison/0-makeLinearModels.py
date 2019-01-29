@@ -40,11 +40,11 @@ def loadData(fileName):
 
 def buildEquationToPrint(b):
 	# start the equation as the intercept + the constant
-	eqn = str(b[0]) + ' * 1 + ' + str(b[1]) + ' * 1 + '
+	eqn = str(b[0]) + ' * 1 + '# + str(b[1]) + ' * 1 + '
 	
 	# build the expression
-	for i in range(2, len(b)):
-		eqn += str(b[i]) + ' * v[' + str(i-2) + ']'
+	for i in range(1, len(b)):
+		eqn += str(b[i]) + ' * v[' + str(i-1) + ']'
 		if i != len(b)-1:		# If we're not at the end of the equation, add a + sign
 			eqn += ' + '
 	return eqn

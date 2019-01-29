@@ -7,124 +7,146 @@ Figure out the GROUP_SIZE based on script 6, the one the prints the accuracy cur
 '''
 
 import csv
+import matplotlib as mpl
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import sklearn.linear_model
 import sys
 
+import scipy
+import scipy.stats
+
+mpl.style.use('classic')
+
+
+DATA_PATH = './accuracyMatrices/'
 
 
 tasks = ['Up', 'Down', 'Walking',  'Jogging', 'Running',]
 subjects = ['1','2','3','4','5','6']
 takes = ['1','2','3','4','5']
-#times = ['']
 times = ['', '10s', '20s']
+#times = ['']
 #times = [sys.argv[1]]
 
 
-# 50, because that's what was in the previous paper, but can be changed
-GROUP_SIZE = 50	
+# CHANGE THESE!
+GROUP_SIZE = 50
+VOTERS = 5
 
-# Probably leave them as 0 -- 1
-V_MIN = 0.0		
-V_MAX = 1.0
-
-def plotMatrices(accMat, AccMatSmall, time, regType):
-	pltz = []
-
-	axes = plt.subplot2grid((1,2), (0,0))
-	pltz.append(axes)
-	img = pltz[0].matshow(accMat, vmin=V_MIN, vmax=V_MAX)
-
-	for i in range(30, 121, 30):
-		pltz[0].axvline(i - 0.5, color='k', linewidth=2)
-		pltz[0].axhline(i - 0.5, color='k', linewidth=2)
-
-	for i in range(5, 151, 5):
-		pltz[0].axvline(i - 0.5, color='k', linewidth=1, linestyle='--')
-		pltz[0].axhline(i - 0.5, color='k', linewidth=1, linestyle='--')
+def loadData(fileName):
+	# Load the data into a numpy array of floats
+	data = np.array(list(csv.reader(open(DATA_PATH + fileName,'r')))).astype(float)
+	return data
 
 
+def calcCI(a):
+	return scipy.stats.norm.interval(0.95, loc=np.mean(a), scale=(np.std(a)/np.sqrt(len(a))))[1] - np.mean(a)	# return 1 because 0 is the negative
 
-	pltz[0].set_title('', fontsize=12)
-	pltz[0].set_ylabel('Data',rotation=90)
-	pltz[0].set_xlabel('Model')
-	pltz[0].set_yticks(range(15,150,30))
-	pltz[0].set_yticklabels(tasks, rotation=90)
-	pltz[0].set_xticks(range(15,150,30))
-	pltz[0].set_xticklabels(tasks, rotation=0)
+def calcIQR(a):
+	q75, q25 = np.percentile(a, [75 ,25])
+	return q75 - q25
 
-	divider = make_axes_locatable(axes)
-	cax = divider.append_axes("right", size="5%", pad=0.05)
-	plt.colorbar(img, cax = cax)
-
-
-	axes = plt.subplot2grid((1,2), (0,1))
-	pltz.append(axes)
-	img = pltz[1].matshow(AccMatSmall, vmin=V_MIN, vmax=V_MAX, aspect='auto')
-
-	for i in range(6, 30, 6):
-		pltz[1].axvline(i - 0.5, color='k', linewidth=2)
-
-	for i in range(30, 121, 30):
-		pltz[1].axhline(i - 0.5, color='k', linewidth=2)
-
-	for i in range(5, 151, 5):
-		pltz[1].axhline(i - 0.5, color='k', linewidth=1, linestyle='--')
-
-	pltz[1].set_title('', fontsize=12)
-	#pltz[1].set_ylabel('Data',rotation=90)
-	pltz[1].set_xlabel('Model')
-	pltz[1].set_yticks(range(15,150,30))
-	pltz[1].set_yticklabels(tasks, rotation=90)
-	pltz[1].set_xticks(range(2,30,6))
-	pltz[1].set_xticklabels(tasks, rotation=0)
-	divider = make_axes_locatable(axes)
-	cax = divider.append_axes("right", size="5%", pad=0.05)
-	plt.colorbar(img, cax = cax)
-
+# Create a plot for each time
+for time in times:
 	
-	# didnt work well with matshow
-	plt.suptitle('Confusion Matrix: ' + time + ', ' + regType, fontsize=16)
-	plt.show()
+	print time
+	# Load up the small acc mats
+	fName = '5-AccMatSmall_' + str(GROUP_SIZE) + '_' + time + '_' + 'OLS' + '.csv'
+	smallMat = loadData(fName)
+	
+	# Generate a matrix with how often data 
+	# from a task (regardless of subject)
+	# was picked by a model of the same task
+	taskMat = []
+	for i in range(0, smallMat.shape[0], 1):
+		row = []
+		for j in range(0, smallMat.shape[1], 6):
+			row.append(np.sum(smallMat[i, j:j+6]))
+		taskMat.append(row)
+	
+	taskMat = np.array(taskMat)	
 
 
-def smushMatrix(accMat, regType, time):
-	'''
-	Function to smush the full accuracy matrix. Should only call this if I need to actually generate it. 
-	'''
+	# Generate a matrix with how often data 
+	# from a subject (regardless of task)
+	# was picked by a model of the same subject
+	subjectMat = []
+	for i in range(0, smallMat.shape[0], 5):
+		row = []
+		for j in range(smallMat.shape[1]):
+			row.append(np.mean(smallMat[i:i+len(takes), j]))
+		subjectMat.append(row)
 
-	# This will smush it over the takes
-	accMatSmall = []
+	subjectMat = np.array(subjectMat)
 
-	# For each row, we'll sum up the accuracies over all takes of the same subject/task
-	# Will result in 150 rows, 30 cols. 
-	# Note, each row will add up to 1.00 (100%)
-	#	Or at least it should... it's possible two models tie, but this would be very very unusual considering floats
-	for i in range(0, accMat.shape[0], 1):
-		accMatRow = []
+	totalAccuracy = []
+	taskAccuracy = []
+	subjectAccuracy = []
 
-		# For each group of 5 (take)
-		# Add up the accuracies over the 5
-		for j in range(0, accMat.shape[0], 5):
-			accMatRow.append(np.sum(accMat[i, j:j+5]))
+	# Make the table (latex format)
+	for i, task in enumerate(tasks):
+		# String we're building for output
+		s = '\hline ' + task + ' &\t '
+		for j, sub in enumerate(subjects):
+			#print '(' + str(i * (len(tasks) * len(subjects)) + len(takes) * j) +  ':' + str(i * (len(tasks) * len(subjects) + len(takes) * j + len(takes))) + ', ' + str( i * len(subjects) + j) + ')\t', smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]
+			# Switch this for mean/median and CI/IQR
+			# This is mean +- CI
+			s += str(round(np.mean(smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]), 3)) 
+			s += ' $\pm$ '+ str(round(calcCI(smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]), 3))
+			totalAccuracy.append(np.mean(smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]))
+			# This is median +- IQR
+			#s += str(round(np.median(smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]), 3)) 
+			#s += ' $\pm$ '+ str(round(calcIQR(smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]), 3))
+			#totalAccuracy.append(np.median(smallMat[i * (len(tasks) * len(subjects)) + j * len(takes):i * (len(tasks) * len(subjects)) + j * len(takes) + len(takes), i * len(subjects) + j]))
+			s += '\t& '
 		
-		accMatSmall.append(accMatRow)
+		# For mean _- CI
+		s += str(round(np.mean(taskMat[i * (len(takes) * len(subjects)): (i+1) * (len(takes) * len(subjects)), i]), 3))
+		s += ' $\pm$ '+ str(round(calcCI(taskMat[i * (len(takes) * len(subjects)): (i+1) * (len(takes) * len(subjects)), i]), 3))
+		taskAccuracy.append(np.mean(taskMat[i * (len(takes) * len(subjects)): (i+1) * (len(takes) * len(subjects)), i]))
+		# This is median +- IQR
+		#s += str(round(np.median(taskMat[i * (len(takes) * len(tasks) * len(subjects)): (i+1) * (len(takes) * len(tasks) * len(subjects)), i)), 3))
+		#s += ' $\pm$ '+ str(round(calcIQR(taskMat[i * (len(takes) * len(tasks) * len(subjects)): (i+1) * (len(takes) * len(tasks) * len(subjects)), i)), 3))
+		#taskAccuracy.append(np.median(taskMat[i * (len(takes) * len(subjects)): (i+1) * (len(takes) * len(subjects)), i])
 
-	accMatSmall = np.array(accMatSmall)
-	np.savetxt('./accuracyMatrices/5-AccMatSmall_' + str(GROUP_SIZE) + '_' + time + '_' + regType + '.csv', accMatSmall, delimiter=',')
-	return accMatSmall
 
+		s += '\\\\'
+		print s
 
-def printMatrices(regType = 'OLS'):
-	for time in times:
-		accMat = np.array(list(csv.reader(open('./accuracyMatrices/5-AccMat_' + str(GROUP_SIZE) + '_' + time + '_' + regType + '.csv','r')))).astype(float)
-		#accMatSmall = np.array(list(csv.reader(open(DATA_PATH + '5-AccMatSmall_' + str(GROUP_SIZE) + '_' + time + '_' + regType + '.csv','r')))).astype(float)
-		accMatSmall = smushMatrix(accMat, regType, time)
-		plotMatrices(accMat, accMatSmall, time, regType)
+	s = '\hline Identify Subject &\t '
+	for i, sub in enumerate(subjects):
+		curSub = []
+		for j in range(0,5):
+			curSub.append(np.sum([subjectMat[j*6+i,0+i], subjectMat[j*6+i,6+i], subjectMat[j*6+i,12+i], subjectMat[j*6+i,18+i], subjectMat[j*6+i,24+i]]))
+
+		# This is mean +- CI
+		s += str(round(np.mean(curSub), 3))
+		s += ' $\pm$ '+ str(round(calcCI(curSub), 3))
+		subjectAccuracy.append(np.mean(curSub))
+		# This is median +- IQR
+		#s += str(round(np.median(curSub), 3))
+		#s += ' $\pm$ '+ str(round(calcIQR(curSub), 3))
+		#subjectAccuracy.append(np.median(curSub))
 		
+		s += '\t& '
 
-printMatrices()
+	s += '\\\\'
+	print s
+
+	print '------------------'
+	print 'Overall Accuracy:', np.mean(totalAccuracy)
+	print 'Task Accuracy:', np.mean(taskAccuracy)
+	print '\tWalking-ish', np.mean(np.sum(taskMat[:90,:3],axis=1))
+	print '\tRunning-ish', np.mean(np.sum(taskMat[90:,3:],axis=1))
+	print 'Subject Accuracy:', np.mean(subjectAccuracy) 
+
+	print '\n\n\n'
+
+
+
+
+
 
 

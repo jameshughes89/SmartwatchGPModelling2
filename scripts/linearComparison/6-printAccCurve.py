@@ -6,12 +6,14 @@ Print out the accuracy curve.
 
 import csv
 import math
+import matplotlib as mpl
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import sklearn.linear_model
 import sys
 
+mpl.style.use('classic')
 
 
 tasks = ['Up', 'Down', 'Walking',  'Jogging', 'Running',]
@@ -59,7 +61,7 @@ def printAccCurve(regType = 'OLS'):
 		plt.plot(Xs,curveData[:,3], label='Minimum')
 
 		plt.title('Accuracy Curves for ' + time + ',' + regType)
-		plt.legend()
+		plt.legend(loc='best')
 		plt.xlabel('Time Points')
 		plt.ylabel('Accuracy')
 		plt.show()
